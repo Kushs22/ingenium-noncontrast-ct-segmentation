@@ -1,0 +1,9 @@
+{
+  "best_dice": 0.8756469488143921,
+  "epochs": 250,
+  "n_total": 60,
+  "n_train": 54,
+  "n_val": 6,
+  "val_fraction": 0.1,
+  "random_seed": 42
+}
