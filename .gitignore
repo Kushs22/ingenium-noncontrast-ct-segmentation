@@ -1,0 +1,11 @@
+.venv/
+.ipynb_checkpoints/
+__pycache__/
+.DS_Store
+*.nii
+*.nii.gz
+*.pt
+data/
+non_contrast_images/
+non_contrast_labels/
+Copy_of_Hackathon_Notebook.executed.ipynb
