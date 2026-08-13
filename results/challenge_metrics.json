@@ -1,0 +1,164 @@
+{
+  "timestamp": "2026-08-13 15:08 UTC",
+  "device": "mps",
+  "method": "contrast-removal domain adaptation from unused contrast CTPA + HU-randomized non-contrast train cases",
+  "n_noncontrast": 10,
+  "n_contrast": 13,
+  "n_train_nc": 7,
+  "n_val": 3,
+  "val_cases": [
+    "train_10000_a_2.nii.gz",
+    "train_10019_a_2.nii.gz",
+    "train_10020_a_2.nii.gz"
+  ],
+  "train_nc_cases": [
+    "train_10001_a_2.nii.gz",
+    "train_10004_a_2.nii.gz",
+    "train_10017_a_2.nii.gz",
+    "train_10018_a_1.nii.gz",
+    "train_10031_a_2.nii.gz",
+    "train_10034_a_2.nii.gz",
+    "train_1_a_2.nii.gz"
+  ],
+  "contrast_source_cases": [
+    "0004.nii.gz",
+    "0006.nii.gz",
+    "0008.nii.gz",
+    "0010.nii.gz",
+    "0014.nii.gz",
+    "0015.nii.gz",
+    "0018.nii.gz",
+    "0020.nii.gz",
+    "0021.nii.gz",
+    "0022.nii.gz",
+    "0024.nii.gz",
+    "0025.nii.gz",
+    "0026.nii.gz"
+  ],
+  "epochs": 5,
+  "train_loss": [
+    1.140560943633318,
+    1.0585280619561672,
+    1.0243126228451729,
+    0.9486836716532707,
+    0.9284094292670488
+  ],
+  "baseline_per_case": [
+    {
+      "case": "train_10000_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0,
+      "dice_mean": 0.0,
+      "reference_slice_z": 59,
+      "pa_gt_diam_mm": 35.34187308823903,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 31.755404570407364,
+      "aorta_pred_diam_mm": 0.0,
+      "mpa_aorta_ratio_gt": 1.1129404133359357,
+      "mpa_aorta_ratio_pred": null
+    },
+    {
+      "case": "train_10019_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0175,
+      "dice_mean": 0.00875,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 73.46606311850633,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 45.416385396362884,
+      "aorta_pred_diam_mm": 0.0,
+      "mpa_aorta_ratio_gt": 1.6176114078067905,
+      "mpa_aorta_ratio_pred": null
+    },
+    {
+      "case": "train_10020_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.18706375058166588,
+      "dice_mean": 0.09353187529083294,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 61.77296265819928,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 50.550882942669475,
+      "aorta_pred_diam_mm": 41.73477802981229,
+      "mpa_aorta_ratio_gt": 1.2219957211876387,
+      "mpa_aorta_ratio_pred": 0.0
+    }
+  ],
+  "adapted_per_case": [
+    {
+      "case": "train_10000_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.5165480427046263,
+      "dice_mean": 0.25827402135231314,
+      "reference_slice_z": 59,
+      "pa_gt_diam_mm": 35.34187308823903,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 31.755404570407364,
+      "aorta_pred_diam_mm": 48.34943437242838,
+      "mpa_aorta_ratio_gt": 1.1129404133359357,
+      "mpa_aorta_ratio_pred": 0.0
+    },
+    {
+      "case": "train_10019_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.08400027361652644,
+      "dice_mean": 0.04200013680826322,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 73.46606311850633,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 45.416385396362884,
+      "aorta_pred_diam_mm": 48.821147341538634,
+      "mpa_aorta_ratio_gt": 1.6176114078067905,
+      "mpa_aorta_ratio_pred": 0.0
+    },
+    {
+      "case": "train_10020_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.44787223489733163,
+      "dice_mean": 0.22393611744866582,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 61.77296265819928,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 50.550882942669475,
+      "aorta_pred_diam_mm": 76.07150406572302,
+      "mpa_aorta_ratio_gt": 1.2219957211876387,
+      "mpa_aorta_ratio_pred": 0.0
+    }
+  ],
+  "baseline_mean": {
+    "dice_pa": 0.0,
+    "dice_aorta": 0.0681879168605553,
+    "dice_mean": 0.03409395843027765
+  },
+  "adapted_mean": {
+    "dice_pa": 0.0,
+    "dice_aorta": 0.3494735170728281,
+    "dice_mean": 0.17473675853641404
+  },
+  "clinical_mean_gt": {
+    "pa_mm": 56.86029962164821,
+    "aorta_mm": 42.57422430314657,
+    "ratio": 1.317515847443455
+  },
+  "clinical_mean_baseline": {
+    "pa_mm": 0.0,
+    "aorta_mm": 13.911592676604096,
+    "ratio": null
+  },
+  "clinical_mean_adapted": {
+    "pa_mm": 0.0,
+    "aorta_mm": 57.74736192656334,
+    "ratio": null
+  },
+  "licence_note": "CT-RATE CC BY-NC-SA 4.0 is demonstration-only; production PHAST would retrain on licensed/clinical data.",
+  "commercialisation": "Pitch the method and PHAST integration. Do not commercialise CT-RATE-trained weights. Retrain on hospital or licensed data before product use.",
+  "zip_source": "Hackathon Challenge-20260813T145659Z-1-001.zip",
+  "figures": [
+    "results/figures/baseline_train_10000_a_2.nii.png",
+    "results/figures/baseline_train_10019_a_2.nii.png",
+    "results/figures/baseline_train_10020_a_2.nii.png",
+    "results/figures/adapted_train_10000_a_2.nii.png",
+    "results/figures/adapted_train_10019_a_2.nii.png",
+    "results/figures/adapted_train_10020_a_2.nii.png"
+  ]
+}

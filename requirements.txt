@@ -1,0 +1,9 @@
+torch>=2.2
+monai==1.4.0
+numpy<2.0
+nibabel
+scipy
+matplotlib
+tqdm
+huggingface_hub
+certifi
