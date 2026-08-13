@@ -57,10 +57,16 @@ HU_MIN, HU_MAX = -200.0, 400.0
 NUM_CLASSES = 3
 CLASS_NAMES = ["background", "pulmonary_artery", "aorta"]
 N_VAL = 3
-EPOCHS = 5
+EPOCHS = 80
 STEPS_PER_EPOCH = 32
 LR = 1e-4
 SEED = 42
+# Positive-patch sampling: most crops are vessel-centred, and most of those
+# are centred on pulmonary_artery (class 1) because PA was completely missed.
+POS_PROB = 0.90
+PA_POS_FRAC = 0.70
+# CE+Dice class weights: [background, pulmonary_artery, aorta]
+CLASS_WEIGHT = (0.4, 2.5, 1.0)
 
 
 def device() -> torch.device:
@@ -176,8 +182,16 @@ def contrast_invariant(image: torch.Tensor, label: torch.Tensor, force_remove: b
 def random_patch(image: np.ndarray, label: np.ndarray, force_remove: bool):
     d, h, w = image.shape
     pd, ph, pw = PATCH
-    pos = np.argwhere(label > 0)
-    if len(pos) and random.random() < 0.85:
+    pos = None
+    if random.random() < POS_PROB:
+        pa = np.argwhere(label == 1)
+        if len(pa) and random.random() < PA_POS_FRAC:
+            pos = pa
+        else:
+            pos = np.argwhere(label > 0)
+        if len(pos) == 0:
+            pos = None
+    if pos is not None:
         z, y, x = pos[random.randrange(len(pos))]
         z0 = min(max(int(z) - pd // 2, 0), max(d - pd, 0))
         y0 = min(max(int(y) - ph // 2, 0), max(h - ph, 0))
@@ -306,6 +320,9 @@ def write_pdf(metrics: dict, fig_paths: list[Path], pdf_path: Path) -> None:
             "",
             f"Device: {metrics['device']}",
             f"Non-contrast paired: {metrics['n_noncontrast']}   Contrast paired: {metrics['n_contrast']}",
+            f"Epochs: {metrics['epochs']}   steps/epoch: {metrics.get('steps_per_epoch', STEPS_PER_EPOCH)}",
+            f"PA-focused sampling: pos={metrics.get('pos_prob', POS_PROB)}  PA frac={metrics.get('pa_pos_frac', PA_POS_FRAC)}",
+            f"Class weights (bg, PA, aorta): {metrics.get('class_weight', CLASS_WEIGHT)}",
             "",
             "Mean hold-out Dice (non-contrast val)",
             f"  Baseline  PA {b['dice_pa']:.3f}   aorta {b['dice_aorta']:.3f}   mean {b['dice_mean']:.3f}",
@@ -421,8 +438,16 @@ def main() -> None:
     adapted = load_weights(CKPT_BASE, dev)
     adapted.train()
     opt = torch.optim.AdamW(adapted.parameters(), lr=LR, weight_decay=1e-5)
-    loss_fn = DiceCELoss(to_onehot_y=True, softmax=True, include_background=False)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS, eta_min=1e-6)
+    class_w = torch.tensor(CLASS_WEIGHT, dtype=torch.float32, device=dev)
+    loss_fn = DiceCELoss(
+        to_onehot_y=True,
+        softmax=True,
+        include_background=False,
+        weight=class_w,
+    )
     history = []
+    t0 = datetime.now(timezone.utc)
     for epoch in range(EPOCHS):
         running = 0.0
         for _ in range(STEPS_PER_EPOCH):
@@ -436,9 +461,15 @@ def main() -> None:
             loss.backward()
             opt.step()
             running += float(loss.item())
+        sched.step()
         avg = running / STEPS_PER_EPOCH
         history.append(avg)
-        print(f"  epoch {epoch+1}/{EPOCHS} loss {avg:.4f}", flush=True)
+        elapsed = (datetime.now(timezone.utc) - t0).total_seconds()
+        print(
+            f"  epoch {epoch+1}/{EPOCHS} loss {avg:.4f}  lr {sched.get_last_lr()[0]:.2e}  "
+            f"elapsed {elapsed/60:.1f} min",
+            flush=True,
+        )
 
     CKPT_ADAPT.parent.mkdir(parents=True, exist_ok=True)
     torch.save(adapted.state_dict(), str(CKPT_ADAPT))
@@ -466,7 +497,7 @@ def main() -> None:
     metrics = {
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "device": str(dev),
-        "method": "contrast-removal domain adaptation from unused contrast CTPA + HU-randomized non-contrast train cases",
+        "method": "contrast-removal domain adaptation from unused contrast CTPA + HU-randomized non-contrast train cases; PA-focused patch sampling and class-weighted DiceCE",
         "n_noncontrast": len(nc),
         "n_contrast": len(contrast),
         "n_train_nc": len(train_nc),
@@ -475,6 +506,10 @@ def main() -> None:
         "train_nc_cases": [p.name for p, _ in train_nc],
         "contrast_source_cases": [p.name for p, _ in contrast],
         "epochs": EPOCHS,
+        "steps_per_epoch": STEPS_PER_EPOCH,
+        "pos_prob": POS_PROB,
+        "pa_pos_frac": PA_POS_FRAC,
+        "class_weight": list(CLASS_WEIGHT),
         "train_loss": history,
         "baseline_per_case": base_rows,
         "adapted_per_case": adapted_rows,

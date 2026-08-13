@@ -14,6 +14,7 @@ The Ingenium baseline SegResNet is trained on contrast CT and fails on non-contr
 2. During training, vessel HU is randomly **flattened to soft-tissue range** (and sometimes boosted), so the network cannot use iodinated brightness.
 3. Held-in **non-contrast** cases get the same HU randomization.
 4. Held-out **non-contrast** cases are used only for evaluation.
+5. **PA-focused patch sampling** (70% of positive crops centred on pulmonary artery) and class-weighted DiceCE (`bg/PA/aorta = 0.4/2.5/1.0`) so the thinner PA class is not ignored.
 
 Architecture stays Ingenium’s SegResNet (`init_filters=16`, 3 classes: background / PA / aorta) so the head can slot into PHAST.
 
@@ -67,14 +68,15 @@ python src/download_datasets.py fumpe
 
 ## Results (held-out non-contrast, n=3)
 
-Contrast-trained baseline vs contrast-removal adapted SegResNet. Val cases were never used in training.
+Contrast-trained baseline vs contrast-removal adapted SegResNet (PA-focused sampling, class-weighted DiceCE). Val cases were never used in training.
 
-| Model | PA Dice | Aorta Dice | Mean Dice |
-| --- | ---: | ---: | ---: |
-| Baseline | 0.000 | 0.068 | 0.034 |
-| Adapted | 0.000 | **0.349** | **0.175** |
+| Model | Epochs | PA Dice | Aorta Dice | Mean Dice | Pred MPA:aorta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Baseline | — | 0.000 | 0.068 | 0.034 | — |
+| Adapted (previous) | 5 | 0.000 | 0.349 | 0.175 | — (PA missed) |
+| Adapted (this run) | **80** | **0.692** | **0.823** | **0.758** | **1.50** (GT 1.32) |
 
-Ground-truth mean equivalent diameters at the max-PA slice: MPA **56.9 mm**, aorta **42.6 mm**, MPA:aorta ratio **1.32**. The adapted model recovers aorta (Dice 0.07 → 0.35) but still misses PA on this short run, so predicted ratio is not yet clinically usable. Next: more epochs, PA-specific sampling, and the remaining Drive zip volumes if Google split the export.
+Ground-truth mean equivalent diameters at the max-PA slice: MPA **56.9 mm**, aorta **42.6 mm**, MPA:aorta ratio **1.32**. Adapted predictions: MPA **62.3 mm**, aorta **42.9 mm**, ratio **1.50**.
 
 Full numbers: `results/challenge_metrics.json`. Overlays: `results/figures/`. Report: `results/Ingenium_Hackathon_Results.pdf`.
 
