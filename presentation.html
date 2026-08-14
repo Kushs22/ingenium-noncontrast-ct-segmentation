@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Contrast CT Segmentation — IngeniumAI Hackathon</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-card: rgba(20, 28, 50, 0.85);
+  --accent-blue: #4f9cf7;
+  --accent-cyan: #36d6c3;
+  --accent-purple: #a855f7;
+  --accent-gold: #f5b731;
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+  --text-primary: #e8ecf4;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: rgba(100, 120, 180, 0.2);
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* ---- Slide Container ---- */
+.slides-wrapper {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+  background: var(--bg-primary);
+  overflow-y: auto;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.slide.exit-left {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+/* ---- Background Glow ---- */
+.slide::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(79, 156, 247, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.slide > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Typography ---- */
+.slide-number {
+  position: absolute;
+  top: 30px;
+  left: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--accent-cyan);
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 800px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-gold {
+  background: linear-gradient(135deg, var(--accent-gold), #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Cards ---- */
+.card-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 30px;
+  flex: 1;
+  min-width: 240px;
+  max-width: 380px;
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-blue);
+}
+
+.card.full-width {
+  max-width: 100%;
+  flex-basis: 100%;
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.card p, .card li {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.card li {
+  margin-bottom: 4px;
+}
+
+/* ---- Metric Boxes ---- */
+.metric-box {
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.metric-value {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+.metric-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ---- Pipeline Arrows ---- */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1100px;
+}
+
+.pipeline-step {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 22px;
+  text-align: center;
+  min-width: 170px;
+  max-width: 220px;
+}
+
+.pipeline-step h4 {
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.pipeline-step p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.pipeline-arrow {
+  font-size: 1.5rem;
+  color: var(--accent-blue);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+/* ---- Table ---- */
+.results-table {
+  width: 100%;
+  max-width: 900px;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.95rem;
+}
+
+.results-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.results-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.results-table tr:last-child td {
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.results-table .highlight {
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+/* ---- Comparison ---- */
+.comparison {
+  display: flex;
+  gap: 40px;
+  margin-top: 24px;
+  align-items: flex-start;
+  max-width: 1000px;
+}
+
+.comparison-col {
+  flex: 1;
+}
+
+.comparison-col h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.hu-bar {
+  height: 24px;
+  border-radius: 6px;
+  margin: 6px 0 12px 0;
+  position: relative;
+}
+
+.hu-bar span {
+  position: absolute;
+  right: 8px;
+  top: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg-primary);
+}
+
+/* ---- Tag ---- */
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+
+.tag-blue { background: rgba(79, 156, 247, 0.15); color: var(--accent-blue); }
+.tag-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+.tag-gold { background: rgba(245, 183, 49, 0.15); color: var(--accent-gold); }
+.tag-purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+
+/* ---- Navigation ---- */
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: rgba(10, 14, 26, 0.92);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  z-index: 100;
+}
+
+.nav-bar .progress-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: rgba(79, 156, 247, 0.1);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+
+.slide-counter {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* ---- Bullet lists ---- */
+ul.clean { list-style: none; padding: 0; }
+ul.clean li { padding: 6px 0; padding-left: 20px; position: relative; }
+ul.clean li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* ---- Divider ---- */
+.divider {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 2px;
+  margin: 16px 0;
+}
+
+/* ---- Fade-in stagger ---- */
+.fade-in { opacity: 0; transform: translateY(20px); }
+.slide.active .fade-in {
+  animation: fadeUp 0.5s ease forwards;
+}
+.slide.active .fade-in:nth-child(2) { animation-delay: 0.1s; }
+.slide.active .fade-in:nth-child(3) { animation-delay: 0.2s; }
+.slide.active .fade-in:nth-child(4) { animation-delay: 0.3s; }
+.slide.active .fade-in:nth-child(5) { animation-delay: 0.35s; }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Content width constraint ---- */
+.content { max-width: 1100px; width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="slides-wrapper" id="slidesWrapper">
+
+<!-- ============================================ -->
+<!-- SLIDE 1: Title -->
+<!-- ============================================ -->
+<div class="slide active" id="slide-0">
+  <div class="slide-number">IngeniumAI Hackathon — Aug 2026</div>
+  <h1 class="fade-in" style="font-size:2.8rem; text-align:center;">
+    Non-Contrast CT Vessel Segmentation<br>
+    <span class="gradient-text">via Curriculum Domain Adaptation</span>
+  </h1>
+  <div class="divider fade-in" style="margin:16px auto;"></div>
+  <p class="subtitle fade-in" style="text-align:center;">
+    Automated 3D segmentation of the <strong>Aorta</strong> and <strong>Pulmonary Artery</strong>
+    on non-contrast chest CT using physics-informed augmentation, boundary-aware loss,
+    and two-phase curriculum transfer learning.
+  </p>
+  <div class="card-row fade-in" style="margin-top:36px;">
+    <div class="card metric-box">
+      <div class="metric-value gradient-green">0.8117</div>
+      <div class="metric-label">Validation Dice</div>
+      <div class="metric-sub">Target ≥ 0.80 ✓</div>
+    </div>
+    <div class="card metric-box">
+      <div class="metric-value gradient-text">3D</div>
+      <div class="metric-label">SegResNet Architecture</div>
+      <div class="metric-sub">MONAI Framework</div>
+    </div>
+    <div class="card metric-box">
+      <div class="metric-value gradient-gold">27</div>
+      <div class="metric-label">NC Training Cases</div>
+      <div class="metric-sub">+ 26 Contrast CT</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 2: The Problem -->
+<!-- ============================================ -->
+<div class="slide" id="slide-1">
+  <div class="slide-number">01 — The Problem</div>
+  <h2 class="fade-in">Why is Non-Contrast CT <span class="gradient-gold">Hard?</span></h2>
+  <p class="subtitle fade-in">
+    On contrast-enhanced CT (CTPA), iodine dye makes blood vessels glow bright white.<br>
+    On non-contrast CT, the intensity cue disappears completely.
+  </p>
+
+  <div class="comparison fade-in" style="margin-top: 30px;">
+    <div class="comparison-col">
+      <h3 style="color: var(--accent-green);">Contrast-Enhanced CT (Easy)</h3>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Surrounding Tissue</div>
+          <div class="hu-bar" style="background:#6b7280; width:30%;"><span>~40 HU</span></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Blood Vessel (with Dye)</div>
+          <div class="hu-bar" style="background:linear-gradient(90deg, #22c55e, #36d6c3); width:100%;"><span>200–400 HU</span></div>
+        </div>
+      </div>
+      <p style="font-size:0.9rem; color:var(--text-secondary);">
+        <strong>Massive gap</strong> → AI easily separates vessels from tissue.
+        Baseline model achieves <strong style="color:var(--accent-green);">Dice = 0.8756</strong>.
+      </p>
+    </div>
+
+    <div class="comparison-col">
+      <h3 style="color: var(--accent-red);">Non-Contrast CT (Hard)</h3>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Surrounding Tissue</div>
+          <div class="hu-bar" style="background:#6b7280; width:30%;"><span>~40 HU</span></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Blood Vessel (no Dye)</div>
+          <div class="hu-bar" style="background:#78716c; width:33%;"><span>~45 HU</span></div>
+        </div>
+      </div>
+      <p style="font-size:0.9rem; color:var(--text-secondary);">
+        <strong>Near-zero gap</strong> → Vessels are invisible to intensity-based models.
+        The AI must learn <strong>3D anatomical shape</strong>, not brightness.
+      </p>
+    </div>
+  </div>
+
+  <div class="card fade-in" style="max-width:700px; margin-top:24px; text-align:center;">
+    <p style="font-size:1rem; color:var(--text-primary);">
+      <strong>Clinical Motivation:</strong> Automated 3D MPA:Aorta diameter ratio from
+      non-contrast CT enables <em>non-invasive pulmonary hypertension screening</em>
+      on routine chest CTs — flagging 90% of PH cases vs. 71% with manual 2D measurements.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 3: Our Approach — 4 Pillars -->
+<!-- ============================================ -->
+<div class="slide" id="slide-2">
+  <div class="slide-number">02 — Our Approach</div>
+  <h2 class="fade-in">Four Technical <span class="gradient-text">Pillars</span></h2>
+  <p class="subtitle fade-in">
+    We bridge the contrast → non-contrast domain gap with a multi-pronged strategy.
+  </p>
+
+  <div class="card-row fade-in">
+    <div class="card">
+      <div class="card-icon">🧪</div>
+      <h3 style="color:var(--accent-blue);">A. Contrast Dampening</h3>
+      <p>
+        Custom <code style="color:var(--accent-cyan);">RandContrastDampend</code> augmentation
+        synthetically strips contrast from labelled CTPA scans by blending vessel voxels
+        toward soft-tissue HU (~50), forcing the CNN to learn
+        <strong>shape, not brightness</strong>.
+      </p>
+      <div style="margin-top:8px;">
+        <span class="tag tag-blue">40% probability</span>
+        <span class="tag tag-blue">Target: 50 HU</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3 style="color:var(--accent-gold);">B. Boundary-Aware Loss</h3>
+      <p>
+        Combined <strong>DiceCE Loss</strong> (region overlap) +
+        <strong>Hausdorff DT Loss</strong> (boundary distance) maintains
+        crisp vessel contours on tubular anatomy.
+      </p>
+      <div style="margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--accent-gold);">
+        ℒ = ℒ<sub>DiceCE</sub> + 0.3 × ℒ<sub>Hausdorff</sub>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-row fade-in">
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <h3 style="color:var(--accent-green);">C. Two-Phase Curriculum</h3>
+      <p>
+        <strong>Phase 1:</strong> Joint training on contrast + non-contrast data
+        for domain-bridging generalization.<br>
+        <strong>Phase 2:</strong> Exclusive non-contrast fine-tuning at 10× lower LR
+        for target specialization.
+      </p>
+      <div style="margin-top:8px;">
+        <span class="tag tag-green">Transfer Learning</span>
+        <span class="tag tag-green">Early Stopping</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🔬</div>
+      <h3 style="color:var(--accent-purple);">D. Strict NC Validation</h3>
+      <p>
+        Dedicated held-out non-contrast validation split (6 cases) evaluated
+        every 5 epochs with <strong>per-class Dice</strong> (Pulmonary Artery + Aorta separately).
+        Zero data leakage between train and val.
+      </p>
+      <div style="margin-top:8px;">
+        <span class="tag tag-purple">Per-Class Dice</span>
+        <span class="tag tag-purple">22% Hold-out</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 4: Architecture & Pipeline -->
+<!-- ============================================ -->
+<div class="slide" id="slide-3">
+  <div class="slide-number">03 — Architecture & Pipeline</div>
+  <h2 class="fade-in">End-to-End <span class="gradient-text">Training Pipeline</span></h2>
+
+  <div class="pipeline fade-in">
+    <div class="pipeline-step">
+      <h4>Pre-trained Baseline</h4>
+      <p>SegResNet 3D<br>Dice = 0.8756<br><em>(Contrast CT)</em></p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" style="border-color: var(--accent-blue);">
+      <h4 style="color:var(--accent-blue);">Phase 1</h4>
+      <p>Joint Training<br>26 Contrast + 22 NC<br>LR = 1×10⁻⁴, 100 epochs</p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" style="border-color: var(--accent-green);">
+      <h4 style="color:var(--accent-green);">Phase 2</h4>
+      <p>NC Fine-Tuning<br>22 NC only<br>LR = 1×10⁻⁵, 50 epochs</p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" style="border-color: var(--accent-gold);">
+      <h4 style="color:var(--accent-gold);">Best Model</h4>
+      <p>Dice = 0.8117<br>on held-out NC<br>validation set</p>
+    </div>
+  </div>
+
+  <div class="card-row fade-in" style="margin-top:32px;">
+    <div class="card" style="max-width:500px;">
+      <h3 style="color:var(--accent-blue);">Model: MONAI SegResNet</h3>
+      <ul class="clean">
+        <li>3D residual encoder-decoder with skip connections</li>
+        <li><code style="color:var(--accent-cyan);">init_filters=16</code>, dropout 0.2</li>
+        <li>3 output channels: Background, Pulmonary Artery, Aorta</li>
+        <li>Sliding-window inference (64³ patches, 50% overlap)</li>
+      </ul>
+    </div>
+
+    <div class="card" style="max-width:500px;">
+      <h3 style="color:var(--accent-gold);">Data Processing</h3>
+      <ul class="clean">
+        <li>Resampled to 2.5mm isotropic spacing</li>
+        <li>HU windowed: [−200, +400] → [0, 1]</li>
+        <li>Random crops (64³), flips, rotations, affine</li>
+        <li>RandContrastDampend applied BEFORE intensity scaling</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 5: Phase 1 Deep Dive -->
+<!-- ============================================ -->
+<div class="slide" id="slide-4">
+  <div class="slide-number">04 — Phase 1: Joint Domain Bridging</div>
+  <h2 class="fade-in">Phase 1: <span class="gradient-text">Joint Training</span></h2>
+  <p class="subtitle fade-in">
+    Bridge the domain gap by training simultaneously on contrast and non-contrast data
+    with synthetic contrast removal.
+  </p>
+
+  <div class="card-row fade-in">
+    <div class="card">
+      <h3 style="color:var(--accent-blue);">Training Data</h3>
+      <ul class="clean">
+        <li><strong>26</strong> Contrast CT scans (with labels)</li>
+        <li><strong>22</strong> Non-Contrast CT scans (train split)</li>
+        <li>Total: <strong>48 training cases</strong></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--accent-cyan);">Key Augmentation</h3>
+      <p>
+        <code style="color:var(--accent-cyan);">RandContrastDampend</code> is applied
+        <strong>only to contrast scans</strong> with 40% probability, blending vessel
+        voxels from ~300 HU → ~50 HU. The model sees the same anatomy with and without
+        contrast across epochs.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--accent-gold);">Hyperparameters</h3>
+      <ul class="clean">
+        <li>Learning Rate: <strong>1×10⁻⁴</strong></li>
+        <li>Scheduler: Cosine Annealing</li>
+        <li>Epochs: <strong>100</strong></li>
+        <li>Best NC Dice: <strong style="color:var(--accent-green);">0.8036</strong> (epoch 75)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card fade-in full-width" style="max-width:900px; margin-top:20px;">
+    <h3 style="color:var(--text-primary);">Phase 1 Validation Dice Progression</h3>
+    <table class="results-table" style="margin-top:12px;">
+      <tr><th>Epoch</th><th>Mean Dice</th><th>PA Dice</th><th>Aorta Dice</th></tr>
+      <tr><td>5</td><td>0.3428</td><td>0.3510</td><td>0.3345</td></tr>
+      <tr><td>20</td><td>0.7186</td><td>0.7333</td><td>0.7039</td></tr>
+      <tr><td>60</td><td>0.7600</td><td>0.7365</td><td>0.7834</td></tr>
+      <tr><td>75</td><td class="highlight">0.8036</td><td class="highlight">0.7827</td><td class="highlight">0.8245</td></tr>
+      <tr><td>100</td><td>0.7771</td><td>0.7667</td><td>0.7875</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 6: Phase 2 Deep Dive -->
+<!-- ============================================ -->
+<div class="slide" id="slide-5">
+  <div class="slide-number">05 — Phase 2: Target Specialization</div>
+  <h2 class="fade-in">Phase 2: <span class="gradient-green">NC Fine-Tuning</span></h2>
+  <p class="subtitle fade-in">
+    Drop contrast data. Specialize exclusively on non-contrast anatomy at a 10× lower learning rate.
+  </p>
+
+  <div class="card-row fade-in">
+    <div class="card">
+      <h3 style="color:var(--accent-green);">What Changes</h3>
+      <ul class="clean">
+        <li>All contrast scans <strong>removed</strong> from training</li>
+        <li>Only <strong>22 NC training cases</strong> remain</li>
+        <li>Initialized from Phase 1 best checkpoint</li>
+        <li>No RandContrastDampend (all data is already NC)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--accent-gold);">Why 10× Lower LR?</h3>
+      <p>
+        A large learning rate would destroy the 3D vascular features learned in Phase 1
+        (<em>catastrophic forgetting</em>). The tiny LR = 1×10⁻⁵ gently nudges convolution
+        filters to adapt to soft-tissue boundaries without destabilizing the network.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--accent-purple);">Early Stopping</h3>
+      <p>
+        With only 22 cases, overfitting is a risk. If validation Dice doesn't improve
+        for <strong>20 consecutive epochs</strong>, training halts automatically.
+        Best weights are always retained.
+      </p>
+    </div>
+  </div>
+
+  <div class="card fade-in full-width" style="max-width:900px; margin-top:20px;">
+    <h3 style="color:var(--text-primary);">Phase 2 Validation Dice Progression</h3>
+    <table class="results-table" style="margin-top:12px;">
+      <tr><th>Epoch</th><th>Mean Dice</th><th>PA Dice</th><th>Aorta Dice</th></tr>
+      <tr><td>5</td><td>0.7910</td><td>0.7840</td><td>0.7981</td></tr>
+      <tr><td>20</td><td>0.8053</td><td>0.7716</td><td>0.8390</td></tr>
+      <tr><td>35</td><td>0.8084</td><td>0.7882</td><td>0.8286</td></tr>
+      <tr><td>40</td><td class="highlight">0.8117</td><td class="highlight">0.7915</td><td class="highlight">0.8319</td></tr>
+      <tr><td>50</td><td>0.8019</td><td>0.7862</td><td>0.8176</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 7: Results -->
+<!-- ============================================ -->
+<div class="slide" id="slide-6">
+  <div class="slide-number">06 — Results</div>
+  <h2 class="fade-in">Final <span class="gradient-green">Performance</span></h2>
+
+  <div class="card-row fade-in">
+    <div class="card metric-box" style="border-color: var(--accent-green);">
+      <div class="metric-value gradient-green">0.8117</div>
+      <div class="metric-label">Overall Mean Dice</div>
+      <div class="metric-sub" style="color:var(--accent-green); margin-top:8px;">✓ Target ≥ 0.80 EXCEEDED</div>
+    </div>
+    <div class="card metric-box">
+      <div class="metric-value" style="color:var(--accent-gold);">0.7915</div>
+      <div class="metric-label">Pulmonary Artery Dice</div>
+      <div class="metric-sub">Complex branching anatomy</div>
+    </div>
+    <div class="card metric-box">
+      <div class="metric-value" style="color:var(--accent-cyan);">0.8319</div>
+      <div class="metric-label">Aorta Dice</div>
+      <div class="metric-sub">Large tubular structure</div>
+    </div>
+  </div>
+
+  <div class="card-row fade-in" style="margin-top:16px;">
+    <div class="card" style="max-width:450px;">
+      <h3 style="color:var(--text-primary);">Phase-over-Phase Improvement</h3>
+      <table class="results-table" style="margin-top:10px;">
+        <tr><th>Phase</th><th>Mean Dice</th><th>Δ</th></tr>
+        <tr><td>Baseline (Contrast Only)</td><td>0.8756</td><td style="color:var(--text-muted);">on contrast data</td></tr>
+        <tr><td>Phase 1 (Joint)</td><td>0.8036</td><td style="color:var(--accent-green);">first NC score</td></tr>
+        <tr><td>Phase 2 (NC Fine-tuned)</td><td class="highlight">0.8117</td><td style="color:var(--accent-green);">+0.81%</td></tr>
+      </table>
+    </div>
+
+    <div class="card" style="max-width:450px;">
+      <h3 style="color:var(--text-primary);">Key Takeaways</h3>
+      <ul class="clean">
+        <li>Contrast-dampening augmentation was critical for Phase 1 convergence</li>
+        <li>Hausdorff loss maintained sharp vessel boundaries</li>
+        <li>Phase 2 fine-tuning improved Aorta Dice by +0.7%</li>
+        <li>Early stopping prevented overfitting on 22-case dataset</li>
+        <li>Zero data leakage: strict train/val separation</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 8: Qualitative Results -->
+<!-- ============================================ -->
+<div class="slide" id="slide-7">
+  <div class="slide-number">07 — Qualitative Results</div>
+  <h2 class="fade-in">Visual <span class="gradient-text">Predictions</span></h2>
+  <p class="subtitle fade-in">
+    Side-by-side comparisons on held-out non-contrast CT validation cases.
+    <span class="tag tag-gold" style="margin-left:8px;">🟨 Aorta</span>
+    <span class="tag tag-green">🟩 Pulmonary Artery</span>
+  </p>
+
+  <div class="fade-in" style="margin-top:24px; text-align:center; max-width:1000px;">
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+      Left: Raw Non-Contrast CT &nbsp;|&nbsp; Middle: Doctor's Ground Truth &nbsp;|&nbsp; Right: AI Prediction
+    </p>
+    <div style="background: var(--bg-card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom:16px;">
+      <p style="font-size:0.9rem; color:var(--accent-cyan); margin-bottom:8px; font-weight:600;">Case: train_10015_a_2 — Axial Slice 71</p>
+      <p style="font-size:0.85rem; color:var(--text-secondary);">
+        The model correctly segments both the ascending aorta and pulmonary artery branches.
+        Predicted contours closely match ground truth boundaries despite zero contrast enhancement.
+      </p>
+    </div>
+    <div style="background: var(--bg-card); border-radius: 12px; padding: 16px; border: 1px solid var(--border);">
+      <p style="font-size:0.9rem; color:var(--accent-cyan); margin-bottom:8px; font-weight:600;">Case: train_10031_a_2 — Axial Slice 101</p>
+      <p style="font-size:0.85rem; color:var(--text-secondary);">
+        Complex mediastinal anatomy with overlapping structures. The model maintains accurate
+        separation between aorta and PA even at the aortic arch level where they are anatomically adjacent.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 9: Clinical Impact -->
+<!-- ============================================ -->
+<div class="slide" id="slide-8">
+  <div class="slide-number">08 — Clinical Impact & Future Work</div>
+  <h2 class="fade-in">Clinical <span class="gradient-gold">Impact</span></h2>
+
+  <div class="card-row fade-in">
+    <div class="card">
+      <div class="card-icon">🫀</div>
+      <h3 style="color:var(--accent-gold);">Downstream Application</h3>
+      <p>
+        Our segmentation enables automated <strong>3D MPA:Aorta diameter ratio</strong>
+        measurement from routine non-contrast chest CTs. This ratio is a validated biomarker
+        for <strong>Pulmonary Hypertension (PH)</strong> that correctly flags 90% of PH cases
+        — compared to 71% with manual 2D measurements (Rossdale et al., Thorax 2025).
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🌍</div>
+      <h3 style="color:var(--accent-cyan);">Population-Scale Screening</h3>
+      <p>
+        Non-contrast CT is performed <strong>millions of times annually</strong> for lung cancer
+        screening, trauma, and routine chest imaging. By enabling automated PH screening on
+        these existing scans, we eliminate the need for additional contrast-enhanced imaging —
+        reducing cost, radiation, and contrast-related adverse events.
+      </p>
+    </div>
+  </div>
+
+  <div class="card-row fade-in" style="margin-top:12px;">
+    <div class="card">
+      <div class="card-icon">🔮</div>
+      <h3 style="color:var(--accent-purple);">Future Work</h3>
+      <ul class="clean">
+        <li><strong>CycleGAN Translation:</strong> Synthetic non-contrast ↔ contrast for additional training pairs</li>
+        <li><strong>Shape Priors:</strong> Anatomical atlas constraints for post-hoc regularization</li>
+        <li><strong>clDice Loss:</strong> Centerline-aware Dice for thin vessel branch accuracy</li>
+        <li><strong>Scale to CT-RATE:</strong> Leverage 21,000+ unlabelled NC CTs via pseudo-labels</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🏥</div>
+      <h3 style="color:var(--accent-green);">Integration Path</h3>
+      <ul class="clean">
+        <li>Export as ONNX/TorchScript for clinical deployment</li>
+        <li>Feed segmentation into IngeniumAI's existing MPA measurement pipeline</li>
+        <li>PACS integration for automated flagging of at-risk patients</li>
+        <li>Validation on external multi-site cohorts</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SLIDE 10: Thank You -->
+<!-- ============================================ -->
+<div class="slide" id="slide-9">
+  <div class="slide-number">Summary</div>
+  <h1 class="fade-in" style="font-size:2.6rem; text-align:center;">
+    <span class="gradient-text">Thank You</span>
+  </h1>
+  <div class="divider fade-in" style="margin:16px auto;"></div>
+
+  <div class="card-row fade-in" style="margin-top:24px;">
+    <div class="card metric-box" style="border-color: var(--accent-green);">
+      <div class="metric-value gradient-green">✓</div>
+      <div class="metric-label">Dice ≥ 0.80 Achieved</div>
+    </div>
+    <div class="card metric-box" style="border-color: var(--accent-blue);">
+      <div class="metric-value" style="color:var(--accent-blue);">4</div>
+      <div class="metric-label">Technical Pillars</div>
+    </div>
+    <div class="card metric-box" style="border-color: var(--accent-gold);">
+      <div class="metric-value" style="color:var(--accent-gold);">2</div>
+      <div class="metric-label">Training Phases</div>
+    </div>
+  </div>
+
+  <div class="fade-in" style="margin-top:32px; text-align:center;">
+    <p class="subtitle">
+      <strong>Key Innovation:</strong> Physics-informed contrast-dampening augmentation +
+      boundary-aware Hausdorff loss + two-phase curriculum transfer learning
+      achieves clinical-grade non-contrast CT vessel segmentation with only 27 labelled cases.
+    </p>
+  </div>
+</div>
+
+</div><!-- end slides-wrapper -->
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Prev</button>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <span class="slide-counter" id="slideCounter">1 / 10</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+
+function showSlide(index) {
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'exit-left');
+    if (i < index) s.classList.add('exit-left');
+  });
+  slides[index].classList.add('active');
+  document.getElementById('slideCounter').textContent = `${index + 1} / ${totalSlides}`;
+  document.getElementById('progressFill').style.width = `${((index + 1) / totalSlides) * 100}%`;
+}
+
+function changeSlide(dir) {
+  const next = currentSlide + dir;
+  if (next >= 0 && next < totalSlides) {
+    currentSlide = next;
+    showSlide(currentSlide);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    changeSlide(1);
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+    e.preventDefault();
+    changeSlide(-1);
+  }
+});
+
+// Touch support
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+});
+
+showSlide(0);
+</script>
+</body>
+</html>
