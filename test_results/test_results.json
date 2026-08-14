@@ -1,0 +1,41 @@
+{
+  "checkpoint": "/kaggle/input/notebooks/rafaprapti/ai-hackathon/data/phase2_nc_finetuned.pt",
+  "num_test_cases": 5,
+  "overall_mean_dice": 0.8148,
+  "overall_pulmonary_artery_dice": 0.806,
+  "overall_aorta_dice": 0.8236,
+  "target_dice": 0.8,
+  "target_met": true,
+  "per_case_results": [
+    {
+      "case_id": "train_10035_a_1",
+      "mean_dice": 0.7124,
+      "pulmonary_artery_dice": 0.737,
+      "aorta_dice": 0.6878
+    },
+    {
+      "case_id": "train_10036_a_2",
+      "mean_dice": 0.8366,
+      "pulmonary_artery_dice": 0.8493,
+      "aorta_dice": 0.8238
+    },
+    {
+      "case_id": "train_10037_a_2",
+      "mean_dice": 0.835,
+      "pulmonary_artery_dice": 0.826,
+      "aorta_dice": 0.8439
+    },
+    {
+      "case_id": "train_10038_a_2",
+      "mean_dice": 0.8441,
+      "pulmonary_artery_dice": 0.8238,
+      "aorta_dice": 0.8644
+    },
+    {
+      "case_id": "train_10039_a_2",
+      "mean_dice": 0.8458,
+      "pulmonary_artery_dice": 0.7937,
+      "aorta_dice": 0.898
+    }
+  ]
+}
