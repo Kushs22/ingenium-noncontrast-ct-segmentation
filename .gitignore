@@ -9,6 +9,8 @@ __pycache__/
 *.nii.gz
 non_contrast_images/
 non_contrast_labels/
+non-contrast_test_set_images*/
+non-contrast_test_set_labels/
 Hackathon Challenge/**/*.nii.gz
 Hackathon Challenge/**/*.nii
 results/cache/

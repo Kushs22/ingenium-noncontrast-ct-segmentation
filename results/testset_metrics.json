@@ -1,0 +1,201 @@
+{
+  "timestamp": "2026-08-14 11:01 UTC",
+  "device": "mps",
+  "split": "external_noncontrast_test_set",
+  "images_dir": "non-contrast_test_set_images 2",
+  "labels_dir": "non-contrast_test_set_labels",
+  "n_test": 5,
+  "test_cases": [
+    "train_10035_a_1.nii.gz",
+    "train_10036_a_2.nii.gz",
+    "train_10037_a_2.nii.gz",
+    "train_10038_a_2.nii.gz",
+    "train_10039_a_2.nii.gz"
+  ],
+  "checkpoint_baseline": "/Users/kushsharma/Desktop/HACKATHON '26/Hackathon Challenge/data/baseline_model.pt",
+  "checkpoint_adapted": "/Users/kushsharma/Desktop/HACKATHON '26/data/adapted_model.pt",
+  "baseline_per_case": [
+    {
+      "case": "train_10035_a_1.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0,
+      "dice_mean": 0.0,
+      "reference_slice_z": 72,
+      "pa_gt_diam_mm": 57.84525497881402,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 22.45446191105733,
+      "aorta_pred_diam_mm": 0.0,
+      "mpa_aorta_ratio_gt": 2.5761140573281374,
+      "mpa_aorta_ratio_pred": null
+    },
+    {
+      "case": "train_10036_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0,
+      "dice_mean": 0.0,
+      "reference_slice_z": 73,
+      "pa_gt_diam_mm": 74.70347330997548,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 49.28834599938094,
+      "aorta_pred_diam_mm": 24.17471718621419,
+      "mpa_aorta_ratio_gt": 1.5156417160136344,
+      "mpa_aorta_ratio_pred": 0.0
+    },
+    {
+      "case": "train_10037_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0,
+      "dice_mean": 0.0,
+      "reference_slice_z": 71,
+      "pa_gt_diam_mm": 66.76534764470117,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 44.90892382211466,
+      "aorta_pred_diam_mm": 0.0,
+      "mpa_aorta_ratio_gt": 1.4866833128569354,
+      "mpa_aorta_ratio_pred": null
+    },
+    {
+      "case": "train_10038_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.22711974812723917,
+      "dice_mean": 0.11355987406361959,
+      "reference_slice_z": 76,
+      "pa_gt_diam_mm": 57.74611993598696,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 42.952579670157775,
+      "aorta_pred_diam_mm": 18.847647942942654,
+      "mpa_aorta_ratio_gt": 1.3444156411426742,
+      "mpa_aorta_ratio_pred": 0.0
+    },
+    {
+      "case": "train_10039_a_2.nii",
+      "dice_pa": 0.0,
+      "dice_aorta": 0.0,
+      "dice_mean": 0.0,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 48.111843576488795,
+      "pa_pred_diam_mm": 0.0,
+      "aorta_gt_diam_mm": 38.298458918537534,
+      "aorta_pred_diam_mm": 0.0,
+      "mpa_aorta_ratio_gt": 1.2562344526401115,
+      "mpa_aorta_ratio_pred": null
+    }
+  ],
+  "adapted_per_case": [
+    {
+      "case": "train_10035_a_1.nii",
+      "dice_pa": 0.6507905524106968,
+      "dice_aorta": 0.5961328976034859,
+      "dice_mean": 0.6234617250070913,
+      "reference_slice_z": 72,
+      "pa_gt_diam_mm": 57.84525497881402,
+      "pa_pred_diam_mm": 65.02636794459211,
+      "aorta_gt_diam_mm": 22.45446191105733,
+      "aorta_pred_diam_mm": 35.01613458935697,
+      "mpa_aorta_ratio_gt": 2.5761140573281374,
+      "mpa_aorta_ratio_pred": 1.8570401532657073
+    },
+    {
+      "case": "train_10036_a_2.nii",
+      "dice_pa": 0.38609501738122826,
+      "dice_aorta": 0.7000787711697519,
+      "dice_mean": 0.5430868942754901,
+      "reference_slice_z": 73,
+      "pa_gt_diam_mm": 74.70347330997548,
+      "pa_pred_diam_mm": 28.92262748940701,
+      "aorta_gt_diam_mm": 49.28834599938094,
+      "aorta_pred_diam_mm": 40.48035689163516,
+      "mpa_aorta_ratio_gt": 1.5156417160136344,
+      "mpa_aorta_ratio_pred": 0.7144854865492445
+    },
+    {
+      "case": "train_10037_a_2.nii",
+      "dice_pa": 0.8490077653149266,
+      "dice_aorta": 0.7300788686429154,
+      "dice_mean": 0.789543316978921,
+      "reference_slice_z": 71,
+      "pa_gt_diam_mm": 66.76534764470117,
+      "pa_pred_diam_mm": 71.80961047225789,
+      "aorta_gt_diam_mm": 44.90892382211466,
+      "aorta_pred_diam_mm": 41.32086917635994,
+      "mpa_aorta_ratio_gt": 1.4866833128569354,
+      "mpa_aorta_ratio_pred": 1.737853339090477
+    },
+    {
+      "case": "train_10038_a_2.nii",
+      "dice_pa": 0.8000543699877668,
+      "dice_aorta": 0.7906976744186046,
+      "dice_mean": 0.7953760222031857,
+      "reference_slice_z": 76,
+      "pa_gt_diam_mm": 57.74611993598696,
+      "pa_pred_diam_mm": 59.8891959999377,
+      "aorta_gt_diam_mm": 42.952579670157775,
+      "aorta_pred_diam_mm": 42.55051859394197,
+      "mpa_aorta_ratio_gt": 1.3444156411426742,
+      "mpa_aorta_ratio_pred": 1.407484514382964
+    },
+    {
+      "case": "train_10039_a_2.nii",
+      "dice_pa": 0.8268,
+      "dice_aorta": 0.8059221113614419,
+      "dice_mean": 0.8163610556807209,
+      "reference_slice_z": 66,
+      "pa_gt_diam_mm": 48.111843576488795,
+      "pa_pred_diam_mm": 53.09380709690773,
+      "aorta_gt_diam_mm": 38.298458918537534,
+      "aorta_pred_diam_mm": 40.48035689163516,
+      "mpa_aorta_ratio_gt": 1.2562344526401115,
+      "mpa_aorta_ratio_pred": 1.3115943428818684
+    }
+  ],
+  "baseline_mean": {
+    "dice_pa": 0.0,
+    "dice_aorta": 0.04542394962544784,
+    "dice_mean": 0.02271197481272392
+  },
+  "adapted_mean": {
+    "dice_pa": 0.7025495410189236,
+    "dice_aorta": 0.7245820646392399,
+    "dice_mean": 0.7135658028290818
+  },
+  "clinical_mean_gt": {
+    "pa_mm": 61.03440788919329,
+    "aorta_mm": 39.580554064249654,
+    "ratio": 1.6358178359962985
+  },
+  "clinical_mean_baseline": {
+    "pa_mm": 0.0,
+    "aorta_mm": 8.604473025831368,
+    "ratio": null
+  },
+  "clinical_mean_adapted": {
+    "pa_mm": 55.74832180062049,
+    "aorta_mm": 39.96964722858584,
+    "ratio": 1.4056915672340522
+  },
+  "method": "Frozen 80-epoch contrast-removal SegResNet vs original baseline; no retraining.",
+  "licence_note": "CT-RATE CC BY-NC-SA 4.0 is demonstration-only; production PHAST would retrain on licensed/clinical data.",
+  "figures": [
+    "results/figures/testset_baseline_train_10035_a_1.nii.png",
+    "results/figures/testset_baseline_train_10036_a_2.nii.png",
+    "results/figures/testset_baseline_train_10037_a_2.nii.png",
+    "results/figures/testset_baseline_train_10038_a_2.nii.png",
+    "results/figures/testset_baseline_train_10039_a_2.nii.png",
+    "results/figures/testset_adapted_train_10035_a_1.nii.png",
+    "results/figures/testset_adapted_train_10036_a_2.nii.png",
+    "results/figures/testset_adapted_train_10037_a_2.nii.png",
+    "results/figures/testset_adapted_train_10038_a_2.nii.png",
+    "results/figures/testset_adapted_train_10039_a_2.nii.png"
+  ],
+  "n_val": 5,
+  "n_noncontrast": 5,
+  "n_contrast": 0,
+  "epochs": 0,
+  "pos_prob": 0.9,
+  "pa_pos_frac": 0.7,
+  "class_weight": [
+    0.4,
+    2.5,
+    1.0
+  ]
+}

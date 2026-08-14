@@ -531,5 +531,134 @@ def main() -> None:
     print("wrote", RESULTS / "Ingenium_Hackathon_Results.pdf")
 
 
+def summarise(rows):
+    return {
+        "dice_pa": float(np.mean([r["dice_pa"] for r in rows])),
+        "dice_aorta": float(np.mean([r["dice_aorta"] for r in rows])),
+        "dice_mean": float(np.mean([r["dice_mean"] for r in rows])),
+    }
+
+
+def clin_mean(rows, pred_key=True):
+    pa = np.mean([r["pa_gt_diam_mm"] if not pred_key else r["pa_pred_diam_mm"] for r in rows])
+    ao = np.mean([r["aorta_gt_diam_mm"] if not pred_key else r["aorta_pred_diam_mm"] for r in rows])
+    ratios = [r["mpa_aorta_ratio_gt"] if not pred_key else r["mpa_aorta_ratio_pred"] for r in rows]
+    ratios = [x for x in ratios if x]
+    return {
+        "pa_mm": float(pa),
+        "aorta_mm": float(ao),
+        "ratio": float(np.mean(ratios)) if ratios else None,
+    }
+
+
+def eval_folder(images_dir: Path, labels_dir: Path, tag_prefix: str = "testset") -> dict:
+    """Score frozen baseline + adapted checkpoints on an external labelled set."""
+    set_seed()
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    FIGDIR.mkdir(parents=True, exist_ok=True)
+    dev = device()
+    pairs = pair_cases(images_dir, labels_dir)
+    if not pairs:
+        sys.exit(f"No paired *.nii.gz cases in {images_dir} / {labels_dir}")
+    print("device", dev)
+    print(f"external test paired {len(pairs)}")
+    print("CASES", [p.name for p, _ in pairs])
+
+    store = []
+    for p, l in pairs:
+        print("  load", p.name)
+        img, lab = load_resampled(p, l)
+        store.append((p.stem, img.astype(np.float32), lab))
+
+    figs: list[Path] = []
+
+    def eval_model(model, tag: str):
+        rows = []
+        for name, img, lab in store:
+            pred = keep_largest(keep_largest(predict_volume(model, img, dev), 1), 2)
+            row = {
+                "case": name,
+                "dice_pa": dice_binary(pred, lab, 1),
+                "dice_aorta": dice_binary(pred, lab, 2),
+            }
+            row["dice_mean"] = (row["dice_pa"] + row["dice_aorta"]) / 2
+            clin = clinical_metrics(pred, lab)
+            row.update(clin)
+            rows.append(row)
+            z = clin["reference_slice_z"]
+            fp = FIGDIR / f"{tag}_{name}.png"
+            overlay_figure(
+                img,
+                lab,
+                pred,
+                z,
+                f"{tag}  {name}  PA Dice {row['dice_pa']:.2f}  aorta {row['dice_aorta']:.2f}",
+                fp,
+            )
+            figs.append(fp)
+            print(
+                f"  {tag} {name} PA {row['dice_pa']:.3f} aorta {row['dice_aorta']:.3f} "
+                f"ratio_pred {clin['mpa_aorta_ratio_pred']}"
+            )
+        return rows
+
+    if not CKPT_ADAPT.exists():
+        sys.exit(f"Adapted checkpoint missing: {CKPT_ADAPT}")
+    baseline = load_weights(CKPT_BASE, dev).eval()
+    adapted = load_weights(CKPT_ADAPT, dev).eval()
+    base_rows = eval_model(baseline, f"{tag_prefix}_baseline")
+    adapted_rows = eval_model(adapted, f"{tag_prefix}_adapted")
+
+    metrics = {
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "device": str(dev),
+        "split": "external_noncontrast_test_set",
+        "images_dir": str(images_dir),
+        "labels_dir": str(labels_dir),
+        "n_test": len(pairs),
+        "test_cases": [p.name for p, _ in pairs],
+        "checkpoint_baseline": str(CKPT_BASE),
+        "checkpoint_adapted": str(CKPT_ADAPT),
+        "baseline_per_case": base_rows,
+        "adapted_per_case": adapted_rows,
+        "baseline_mean": summarise(base_rows),
+        "adapted_mean": summarise(adapted_rows),
+        "clinical_mean_gt": clin_mean(base_rows, pred_key=False),
+        "clinical_mean_baseline": clin_mean(base_rows, pred_key=True),
+        "clinical_mean_adapted": clin_mean(adapted_rows, pred_key=True),
+        "method": "Frozen 80-epoch contrast-removal SegResNet vs original baseline; no retraining.",
+        "licence_note": "CT-RATE CC BY-NC-SA 4.0 is demonstration-only; production PHAST would retrain on licensed/clinical data.",
+        "figures": [str(p.relative_to(ROOT)) for p in figs],
+        "n_val": len(pairs),
+        "n_noncontrast": len(pairs),
+        "n_contrast": 0,
+        "epochs": 0,
+        "pos_prob": POS_PROB,
+        "pa_pos_frac": PA_POS_FRAC,
+        "class_weight": list(CLASS_WEIGHT),
+    }
+    out_json = RESULTS / "testset_metrics.json"
+    out_pdf = RESULTS / "Ingenium_Hackathon_TestSet_Results.pdf"
+    out_json.write_text(json.dumps(metrics, indent=2, default=str))
+    write_pdf(metrics, figs, out_pdf)
+    print("MEAN baseline", metrics["baseline_mean"])
+    print("MEAN adapted", metrics["adapted_mean"])
+    print("wrote", out_json)
+    print("wrote", out_pdf)
+    return metrics
+
+
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Ingenium non-contrast segmentation pipeline")
+    parser.add_argument("--eval-only", action="store_true", help="Skip training; score checkpoints on a folder pair")
+    parser.add_argument("--images", type=Path, default=None)
+    parser.add_argument("--labels", type=Path, default=None)
+    args = parser.parse_args()
+    if args.eval_only:
+        img_dir = args.images or (ROOT / "non-contrast_test_set_images 2")
+        lab_dir = args.labels or (ROOT / "non-contrast_test_set_labels")
+        eval_folder(img_dir, lab_dir)
+    else:
+        main()
